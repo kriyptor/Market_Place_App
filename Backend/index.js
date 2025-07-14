@@ -5,6 +5,8 @@ const bodyParser = require(`body-parser`);
 
 const { connectToDB } = require(`./utils/db`)
 const authRouter = require(`./routers/auth-router`);
+const productRouter = require(`./routers/product-router`);
+const { Product } = require('./models/product-model');
 
 const PORT = process.env.PORT || 3000;
 
@@ -21,6 +23,7 @@ app.use(cors())
 /* -----------API Routes--------------- */
 
 app.use(`${process.env.API_BASE_URL}/auth`, authRouter);
+app.use(`${process.env.API_BASE_URL}/store`, productRouter);
 
 /* ;
 app.use(`${process.env.API_BASE_URL}/query`, queryRouter);
@@ -34,5 +37,10 @@ connectToDB()
     app.listen(PORT, () =>
       console.log(`Connected To DB, Sever Started At Port:${PORT}`) 
     );
+
+    /* (async () => {
+      const insertedProducts = await Product.insertMany(productsData);
+      console.log(`Successfully inserted ${insertedProducts.length} products!`);
+    })() */
   })
   .catch((err) => console.log(`Server Crashed with error: ${err}`));

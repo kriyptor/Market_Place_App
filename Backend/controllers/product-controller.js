@@ -1,26 +1,22 @@
-const mongoose = require('mongoose');
-const { Product } = require(`../models/product-model`);
+const mongoose = require("mongoose");
+const { Product } = require("../models/product-model");
 
-
-
-/* ----- Get Controller ------ */
-
+/* ----- Get All Products ------ */
 exports.getAllProducts = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limitPointer = parseInt(req.query.limit) || 15;
     const skipPointer = (page - 1) * limitPointer;
 
-    const allProductData = await Product
-      .find({})
+    const allProductData = await Product.find({})
       .sort({ createdAt: -1 })
       .skip(skipPointer)
-      .limit(limitPointer)
-      .toArray(); // to convert cursor object into js array
+      .limit(limitPointer);
 
     const totalProducts = await Product.countDocuments();
 
     res.status(200).json({
+      success: true,
       data: allProductData,
       pagination: {
         currentPage: page,
@@ -31,87 +27,171 @@ exports.getAllProducts = async (req, res) => {
       },
     });
   } catch (error) {
-    console.log(`We got ans error: ${error}`)
-    res.status(500).json({ message: "Error fetching products" });
+    console.log(`Error fetching products: ${error}`);
+    res
+      .status(500)
+      .json({ success: false, message: "Error fetching products" });
   }
 };
 
-
+/* ----- Get Single Product ------ */
 exports.getSingleProduct = async (req, res) => {
   try {
-    
     const productId = req.params.id;
 
-    if(!mongoose.isValidObjectId(bookId)){
-      return res.status(400).json({ error : 'Invalid product ID format' });
-    };
+    if (!mongoose.isValidObjectId(productId)) {
+      return res
+        .status(400)
+        .json({ success: false, error: "Invalid product ID format" });
+    }
 
     const singleProduct = await Product.findById(productId);
 
-    if(!singleProduct){
-      return res.status(400).json({ error : 'Product not find!' });
+    if (!singleProduct) {
+      return res
+        .status(404)
+        .json({ success: false, error: "Product not found!" });
     }
 
     res.status(200).json({
-      message : 'Success',
+      success: true,
+      message: "Success",
       data: singleProduct,
     });
-
   } catch (error) {
-    console.log(`We got ans error: ${error}`)
-    res.status(500).json({ message: "Error fetching product" });
+    console.log(`Error fetching product: ${error}`);
+    res.status(500).json({ success: false, message: "Error fetching product" });
   }
 };
 
-
-/* -------- Create Controller --------- */
-
-exports.createUser = async (req, res) => {
+/* -------- Create Product --------- */
+exports.createProduct = async (req, res) => {
   try {
-    const { userName, email, phone, password, role } = req.body;
+    const {
+      name,
+      description,
+      price,
+      category,
+      brand,
+      stockQuantity,
+      images,
+      vendorId,
+      vendorName,
+      averageRating,
+      totalReviews,
+    } = req.body;
 
-    // Validate inputs
-    if (isStringInvalid(userName) || isStringInvalid(email) || isStringInvalid(password)) {
+    // Validate required fields
+    if (!name || !price || !category || !vendorId || !vendorName) {
       return res.status(400).json({
         success: false,
-        message: 'Username, email, and password are required'
+        message: "Required fields are missing!",
       });
     }
 
-    const isUserExist = await User.findOne({ email });
-
-    if (isUserExist) {
-      return res.status(400).json({
-        success: false,
-        message: 'User already exists!'
-      });
-    }
-
-    const saltRounds = 10;
-    const hashedPassword = await bcrypt.hash(password, saltRounds);
-
-    const newUserData = {
-      userName,
-      email,
-      phone,
-      password: hashedPassword,
-      role: role || 'buyer'
+    const newProductData = {
+      name,
+      description,
+      price,
+      category,
+      brand,
+      stockQuantity,
+      images,
+      vendorId,
+      vendorName,
+      averageRating,
+      totalReviews,
     };
 
-    const user = new User(newUserData);
-    await user.save();
+    const newProd = new Product(newProductData);
+    await newProd.save();
 
     return res.status(201).json({
       success: true,
-      message: 'Successfully created new user'
+      message: "Successfully added new product",
+      data: newProd,
     });
-
   } catch (error) {
-    console.log(error);
+    console.log(`Error creating product: ${error}`);
     return res.status(500).json({
       success: false,
-      message: 'Internal server error',
-      error: error.message
+      message: "Internal server error",
+      error: error.message,
     });
+  }
+};
+
+/* ------- Update Product -------- */
+exports.updateSingleProduct = async (req, res) => {
+  try {
+    const productId = req.params.id;
+
+    const { name, description, price, category, brand, stockQuantity, images } = req.body;
+
+    if (!mongoose.isValidObjectId(productId)) {
+      return res
+        .status(400)
+        .json({ success: false, error: "Invalid product ID format" });
+    }
+
+    const updatedProduct = await Product.findByIdAndUpdate(
+      productId,
+      {
+        ...(name && { name }),
+        ...(description && { description }),
+        ...(price && { price }),
+        ...(category && { category }),
+        ...(brand && { brand }),
+        ...(stockQuantity && { stockQuantity }),
+        ...(images && { images }),
+      },
+      { new: true, runValidators: true }
+    );
+
+    if (!updatedProduct) {
+      return res
+        .status(404)
+        .json({ success: false, error: "Product not found!" });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Product updated successfully",
+      data: updatedProduct,
+    });
+  } catch (error) {
+    console.log(`Error updating product: ${error}`);
+    res.status(500).json({ success: false, message: "Error updating product" });
+  }
+};
+
+/* -------- Delete Product ------- */
+exports.deleteSingleProduct = async (req, res) => {
+  try {
+    const productId = req.params.id;
+
+    if (!mongoose.isValidObjectId(productId)) {
+      return res
+        .status(400)
+        .json({ success: false, error: "Invalid product ID format" });
+    }
+
+    const deletedProduct = await Product.findByIdAndDelete(productId);
+
+    if (!deletedProduct) {
+      return res.status(404).json({
+        success: false,
+        message: "No product found for deletion",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Product deleted successfully",
+      data: deletedProduct,
+    });
+  } catch (error) {
+    console.log(`Error deleting product: ${error}`);
+    res.status(500).json({ success: false, message: "Error deleting product" });
   }
 };

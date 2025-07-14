@@ -92,6 +92,8 @@ exports.loginUser = async (req, res) => {
       });
     }
 
+    console.log(`here is id: ${user.id}`)
+
     const token = generateAccessToken(user.id, user.role);
 
     return res.status(200).json({
