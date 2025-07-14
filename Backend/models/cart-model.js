@@ -17,7 +17,8 @@ const CartItemSchema = new mongoose.Schema({
   quantity: {
     type: Number,
     required: true,
-    min: [1, 'Quantity must be at least 1']
+    min: [1, 'Quantity must be at least 1'],
+    default : 1
   },
   image: { // Denormalized
     type: String
@@ -40,14 +41,8 @@ const CartSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
-  createdAt: {
-    type: Date,
-    default: Date.now
-  },
-  updatedAt: {
-    type: Date,
-    default: Date.now
-  }
-});
+}, { timestamps: true });
 
-module.exports = mongoose.model('Cart', CartSchema);
+const Cart = mongoose.model('Cart', CartSchema)
+
+module.exports = { Cart };

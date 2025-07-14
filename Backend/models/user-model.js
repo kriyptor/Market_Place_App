@@ -35,15 +35,16 @@ const UserSchema = new mongoose.Schema({
     // Only present if role is 'buyer'
   },
   address: {
-    street: { type: String },
-    city: { type: String },
-    state: { type: String },
-    zipCode: { type: String },
-    country: { type: String }
+    type: String,
+    default : 'Add your address'
   },
   phone: {
     type: String,
     match: [/^\+?[1-9]\d{1,14}$/, 'Please add a valid phone number'] // Basic international phone format
+  },
+  image: {
+    type: String, 
+    default: 'https://static.vecteezy.com/system/resources/thumbnails/009/292/244/small/default-avatar-icon-of-social-media-user-vector.jpg'
   },
   // Vendor-specific fields (optional, only present if role is 'vendor')
   vendorInfo: {
@@ -53,6 +54,7 @@ const UserSchema = new mongoose.Schema({
     },
     description: {
       type: String,
+      default : 'Enter your store information',
       maxlength: [500, 'Description can not be more than 500 characters']
     },
   }

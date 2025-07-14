@@ -1,4 +1,6 @@
+const mongoose = require('mongoose');
 const { User } = require('../models/user-model');
+const { Cart } = require(`../models/cart-model`);
 const jwt = require(`jsonwebtoken`);
 const bcrypt = require('bcrypt');
 
@@ -45,6 +47,14 @@ exports.createUser = async (req, res) => {
 
     const user = new User(newUserData);
     await user.save();
+
+    const cartData = {
+      buyerId : user._id,
+      items : []
+    }
+
+    const newCart = new Cart(cartData);
+    await newCart.save();
 
     return res.status(201).json({
       success: true,
@@ -108,6 +118,99 @@ exports.loginUser = async (req, res) => {
       success: false,
       message: 'Internal server error',
       error: error.message
+    });
+  }
+};
+
+
+/* ----------- User Data Updatation Controller ------------- */
+
+exports.updateBuyerData = async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const { userName, password, phone, address, image } = req.body;
+
+    if (!mongoose.isValidObjectId(userId)) {
+      return res.status(400).json({ success: false, error: "Invalid user ID format" });
+    }
+
+    const updateFields = {};
+    if (userName) updateFields.userName = userName;
+    if (phone) updateFields.phone = phone;
+    if (address) updateFields.address = address;
+    if (image) updateFields.image = image;
+    if (password) {
+      const saltRounds = 10;
+      updateFields.password = await bcrypt.hash(password, saltRounds);
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      updateFields,
+      { new: true, runValidators: true }
+    );
+
+    if (!updatedUser) {
+      return res.status(404).json({ success: false, error: "User not found!" });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "User data updated successfully",
+      data: updatedUser,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      error: error.message,
+    });
+  }
+};
+
+exports.updateVendorData = async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const { userName, password, phone, address, image, storeName, description } = req.body;
+
+    if (!mongoose.isValidObjectId(userId)) {
+      return res.status(400).json({ success: false, error: "Invalid user ID format" });
+    }
+
+    const updateFields = {};
+    if (userName) updateFields.userName = userName;
+    if (phone) updateFields.phone = phone;
+    if (address) updateFields.address = address;
+    if (image) updateFields.image = image;
+    if (password) {
+      const saltRounds = 10;
+      updateFields.password = await bcrypt.hash(password, saltRounds);
+    }
+    if (storeName) updateFields['vendorInfo.storeName'] = storeName;
+    if (description) updateFields['vendorInfo.description'] = description;
+
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { $set: updateFields },
+      { new: true, runValidators: true }
+    );
+
+    if (!updatedUser) {
+      return res.status(404).json({ success: false, error: "User not found!" });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "User data updated successfully",
+      data: updatedUser,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      error: error.message,
     });
   }
 };

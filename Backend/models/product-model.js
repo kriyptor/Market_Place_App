@@ -35,7 +35,7 @@ const ProductSchema = new mongoose.Schema({
     default: 10
   },
   images: {
-    type: String, // Array of image URLs
+    type: String, 
     default: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTKnKnw0MtmVH5_-A-wrEh5OiTSL3lu_5MZZA&s'
   },
   vendorId: {
