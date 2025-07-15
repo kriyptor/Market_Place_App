@@ -36,7 +36,7 @@ const UserSchema = new mongoose.Schema({
   },
   address: {
     type: String,
-    default : 'Add your address'
+    default : "User's default Address"
   },
   phone: {
     type: String,

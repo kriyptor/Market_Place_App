@@ -6,11 +6,11 @@ const CartItemSchema = new mongoose.Schema({
     ref: 'Product',
     required: true
   },
-  productName: { // Denormalized
+  productName: {
     type: String,
     required: true
   },
-  price: { // Denormalized (price at time of adding to cart)
+  price: {
     type: Number,
     required: true
   },
@@ -18,10 +18,19 @@ const CartItemSchema = new mongoose.Schema({
     type: Number,
     required: true,
     min: [1, 'Quantity must be at least 1'],
-    default : 1
+    default: 1
   },
-  image: { // Denormalized
+  image: {
     type: String
+  },
+  vendorId: {
+    type: mongoose.Schema.ObjectId,
+    ref: 'User',
+    required: true
+  },
+  vendorName: {
+    type: String,
+    required: true
   }
 }, { _id: false }); // Do not create _id for subdocuments unless explicitly needed
 

@@ -54,15 +54,16 @@ const OrderSchema = new mongoose.Schema({
   },
   paymentStatus: {
     type: String,
-    enum: ['Pending', 'Paid', 'Failed', 'Refunded'],
-    default: 'Pending'
+    default: 'Paid'
   },
   items: [OrderItemSchema] // Array of embedded order items
-});
+}, { timestamps: true });
 
 // Indexing for efficient queries
 OrderSchema.index({ buyerId: 1 });
 OrderSchema.index({ orderDate: -1 });
 OrderSchema.index({ "items.vendorId": 1 }); // Multi-key index for vendor sales dashboard
 
-module.exports = mongoose.model('Order', OrderSchema);
+const Order = mongoose.model('Order', OrderSchema);
+
+module.exports = { Order }

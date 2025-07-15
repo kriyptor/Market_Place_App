@@ -6,6 +6,7 @@ const bodyParser = require(`body-parser`);
 const { connectToDB } = require(`./utils/db`)
 const authRouter = require(`./routers/auth-router`);
 const cartRouter = require(`./routers/cart-router`);
+const orderRouter = require(`./routers/order-router`);
 const productRouter = require(`./routers/product-router`);
 const { Product } = require('./models/product-model');
 
@@ -24,13 +25,9 @@ app.use(cors())
 /* -----------API Routes--------------- */
 
 app.use(`${process.env.API_BASE_URL}/auth`, authRouter);
+app.use(`${process.env.API_BASE_URL}/order`, orderRouter);
 app.use(`${process.env.API_BASE_URL}/store`, productRouter);
 app.use(`${process.env.API_BASE_URL}/checkout`, cartRouter);
-
-/* ;
-app.use(`${process.env.API_BASE_URL}/query`, queryRouter);
-app.use(`${process.env.API_BASE_URL}/aggre`, aggreRouter);
- */
 
 
 /* -------DB Connection------- */
